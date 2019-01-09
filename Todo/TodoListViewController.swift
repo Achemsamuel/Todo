@@ -8,8 +8,11 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class TodoListViewController: UITableViewController {
 
+    let todoTableCellIdentifier = "todoItemCell"
+   let itemArray = ["Go to the Mall", "Buy Milk", "Prepare Pancakes", "Eat"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
