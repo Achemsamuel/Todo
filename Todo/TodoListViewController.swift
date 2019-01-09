@@ -9,11 +9,17 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
+    
 
-    // Variables
+    //MARK: Variable Declaratons
     
     let todoTableCellIdentifier = "todoItemCell"
     var itemArray = [String]()
+    let defaults = UserDefaults.standard
+    
+    
+    
+    //LifeCycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,8 +43,8 @@ class TodoListViewController: UITableViewController {
             print("add button pressed")
             
                 self.itemArray.append(textField.text!)
-                print(self.itemArray)
-                
+              self.defaults.set(self.itemArray, forKey: "Todo List Array")
+           
                 self.updateUI()
             
         }
@@ -58,6 +64,10 @@ class TodoListViewController: UITableViewController {
     
     func updateUI () {
         tableView.reloadData()
+        if let items = defaults.array(forKey: "Todo List Array") as? [String] {
+            itemArray = items
+        }
+        
     }
    
 }
