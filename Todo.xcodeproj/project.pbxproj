@@ -58,6 +58,7 @@
 			children = (
 				A52940C821E554F800106668 /* AppDelegate.swift */,
 				A52940CA21E554F800106668 /* TodoListViewController.swift */,
+				A52940E121E63FFA00106668 /* Variables */,
 				A52940DA21E5582F00106668 /* Cells */,
 				A52940CC21E554F800106668 /* Main.storyboard */,
 				A52940CF21E554FA00106668 /* Assets.xcassets */,
@@ -73,6 +74,13 @@
 				A52940DB21E5585E00106668 /* TodoListTableViewCell.swift */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		A52940E121E63FFA00106668 /* Variables */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Variables;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
