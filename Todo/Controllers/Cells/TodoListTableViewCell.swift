@@ -28,7 +28,13 @@ extension TodoListViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: todoTableCellIdentifier, for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]
+        let item = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        //Ternary Operator
+        // Value = condition ? valueIfTrue : valueIfFalse
+        cell.accessoryType = item.done ?  .checkmark : .none
+        
         return cell
     }
     
@@ -39,24 +45,17 @@ extension TodoListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        print(itemArray[indexPath.row])
         
-        if  tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-             tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+       itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        saveItems()
+        updateUI()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
         
     }
     
-//    override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-////        print(itemArray[indexPath.row])
-//        tableView.cellForRow(at: indexPath)?.accessoryType = .none
-//
-//    }
-    
+
     
     
 }
