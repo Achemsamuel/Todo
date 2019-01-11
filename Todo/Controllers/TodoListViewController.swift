@@ -31,7 +31,7 @@ class TodoListViewController: UITableViewController {
 //            itemArray = items
 //        }
 
-        loadItems()
+      loadItems()
       updateUI()
        
     }
