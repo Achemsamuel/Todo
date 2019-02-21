@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import CoreData
 
-extension TodoListViewController {
+extension TodoListViewController : UISearchBarDelegate  {
     
     
     //MARK: TableView DataSource Methods
@@ -45,7 +46,10 @@ extension TodoListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        print(itemArray[indexPath.row])
         
-       itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+                            itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         
         saveItems()
         updateUI()
@@ -55,7 +59,31 @@ extension TodoListViewController {
         
     }
     
-
+    //MARK: Search Bar Methods
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request, predicate: predicate)
+        
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                    searchBar.resignFirstResponder()
+            }
+        
+        }
+    }
     
     
 }

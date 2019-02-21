@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
@@ -15,7 +16,12 @@ class TodoListViewController: UITableViewController {
     
     let todoTableCellIdentifier = "todoItemCell"
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
+    let context =  (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
     //LifeCycle
@@ -23,16 +29,18 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(dataFilePath!)
-        // Do any additional setup after loading the view, typically from a nib.
-
         
+        
+//        print(dataFilePath!)
+        // Do any additional setup after loading the view, typically from a nib.
+        
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
 //        if let items = defaults.array(forKey: "Todo List Array") as? [Item] {
 //            itemArray = items
 //        }
 
-      loadItems()
-      updateUI()
+
+        updateUI()
        
     }
 
@@ -50,14 +58,15 @@ class TodoListViewController: UITableViewController {
             //what happens when the user clicks the add item button on UI Alert
             print("add button pressed")
             
-                let newItem = Item()
+            let newItem = Item(context: self.context)
                 newItem.title = textField.text!
+                newItem.done = false
+                newItem.parentCategory = self.selectedCategory
                 self.itemArray.append(newItem)
             
             self.saveItems()
             
-            
-           
+         
             self.updateUI()
             
         }
@@ -78,32 +87,33 @@ class TodoListViewController: UITableViewController {
     
     func saveItems () {
         
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(itemArray)
-            
-            try data.write(to: dataFilePath!)
-            
+       try  context.save()
         } catch {
-            print("Error encoding item array, \(error )")
+            print("Error, Could not save context properly\(error)")
         }
         
     }
     
-    func loadItems () {
-        if  let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
-                
-            } catch {
-                print("Could not decode \(error)")
-            }
+    func loadItems (with request : NSFetchRequest<Item> = Item.fetchRequest(), predicate : NSPredicate? = nil) {
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+            
+        } else {
+            request.predicate = categoryPredicate
         }
+
+        do {
+          itemArray =  try context.fetch(request)
+        } catch {
+            print("Error Could not fetch request from context \(error)")
+        }
+        self.tableView.reloadData()
+    
     }
-    
-    
     
     
     
@@ -113,8 +123,6 @@ class TodoListViewController: UITableViewController {
         
          self.tableView.reloadData()
     }
-   
-    
     
 }
 
