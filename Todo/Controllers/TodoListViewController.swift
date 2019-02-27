@@ -8,20 +8,27 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
     
 
     //MARK: Variable Declaratons
     
+    let realm = try! Realm()
+//    var dateFormatter : DateFormatter {
+//        self.dateFormatter.dateFormat = "dd.MM.yyyy"
+//    }
+    
+    
     let todoTableCellIdentifier = "todoItemCell"
-    var itemArray = [Item]()
+    var todoItems : Results<Item>?
     var selectedCategory : Category? {
         didSet {
-            loadItems()
+           loadItems()
         }
     }
-    let context =  (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+   // let context =  (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
     //LifeCycle
@@ -29,16 +36,7 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        
-//        print(dataFilePath!)
-        // Do any additional setup after loading the view, typically from a nib.
-        
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-//        if let items = defaults.array(forKey: "Todo List Array") as? [Item] {
-//            itemArray = items
-//        }
-
+  print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
 
         updateUI()
        
@@ -58,13 +56,20 @@ class TodoListViewController: UITableViewController {
             //what happens when the user clicks the add item button on UI Alert
             print("add button pressed")
             
-            let newItem = Item(context: self.context)
-                newItem.title = textField.text!
-                newItem.done = false
-                newItem.parentCategory = self.selectedCategory
-                self.itemArray.append(newItem)
-            
-            self.saveItems()
+            if let currentCategory = self.selectedCategory {
+                
+                do {
+                    try self.realm.write {
+                        let newItem = Item()
+                        newItem.title = textField.text!
+                        newItem.dateCreated = Date()
+                        currentCategory.items.append(newItem)
+                    }
+                } catch {
+                    print("Error Saving Items \(error)")
+                }
+                
+            }
             
          
             self.updateUI()
@@ -85,34 +90,12 @@ class TodoListViewController: UITableViewController {
     
     //MARK: Model Adjusting Methods
     
-    func saveItems () {
-        
-        do {
-       try  context.save()
-        } catch {
-            print("Error, Could not save context properly\(error)")
-        }
-        
-    }
     
-    func loadItems (with request : NSFetchRequest<Item> = Item.fetchRequest(), predicate : NSPredicate? = nil) {
-        
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
-            
-        } else {
-            request.predicate = categoryPredicate
-        }
+    func loadItems () {
 
-        do {
-          itemArray =  try context.fetch(request)
-        } catch {
-            print("Error Could not fetch request from context \(error)")
-        }
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         self.tableView.reloadData()
-    
+
     }
     
     
