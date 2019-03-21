@@ -7,10 +7,10 @@
 //
 
 import UIKit
-import CoreData
 import RealmSwift
+import ChameleonFramework
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
 
     //MARK: Variable Declaratons
@@ -21,13 +21,15 @@ class TodoListViewController: UITableViewController {
 //    }
     
     
-    let todoTableCellIdentifier = "todoItemCell"
+    let todoTableCellIdentifier = "Cell"
     var todoItems : Results<Item>?
     var selectedCategory : Category? {
         didSet {
            loadItems()
         }
     }
+    
+    let categoryVC = CategoryViewController()
    // let context =  (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
@@ -35,13 +37,38 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-  print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-
         updateUI()
-       
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+            title =  selectedCategory?.name
+            guard let hexColor = selectedCategory?.color else { fatalError() }
+            updateNavigationBar(withHexColor: hexColor)
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        updateNavigationBar(withHexColor: "310076")
+    }
+    
+    
+    //MARK: Navigation Bar Update Methods
+    func updateNavigationBar (withHexColor colorHexColor : String) {
+
+        guard let navigationBar = navigationController?.navigationBar else {
+            fatalError("Navigation Contrller Does not exist")}
+        
+            guard let navigationBarColor = UIColor(hexString: colorHexColor) else { fatalError() }
+            navigationBar.tintColor = ContrastColorOf(navigationBarColor, returnFlat: true)
+            navigationBar.barTintColor = navigationBarColor
+            searchBarDesign.barTintColor = navigationBarColor
+            navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navigationBarColor, returnFlat: true)]
     }
 
+    @IBOutlet weak var searchBarDesign : UISearchBar!
     
     //Add New Actions
     
@@ -63,7 +90,9 @@ class TodoListViewController: UITableViewController {
                         let newItem = Item()
                         newItem.title = textField.text!
                         newItem.dateCreated = Date()
+                      //  newItem.color = UIColor.flatPurpleDark.hexValue()
                         currentCategory.items.append(newItem)
+                        
                     }
                 } catch {
                     print("Error Saving Items \(error)")
@@ -106,6 +135,24 @@ class TodoListViewController: UITableViewController {
         
          self.tableView.reloadData()
     }
+    
+    //Swipe Delete Method
+    
+    override func updateModel(at indexPath: IndexPath) {
+        
+        if let itemForDeletion = todoItems?[indexPath.row] {
+            
+            do {
+                try realm.write {
+                    realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error, could not delete item: \(error)")
+            }
+        }
+        
+    }
+    
     
 }
 
